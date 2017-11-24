@@ -19,16 +19,12 @@ public class ProjectDisplayItem {
         return (name.compareTo(passedName)==0);
     }
     public void incrementCounters(Double passedPrice){
+
         totalCount++;
-        int index=0;
-        for (Double p : pricesEncountered){
-            if (passedPrice.equals(p)){
-                timesEncountered.set(index, timesEncountered.get(index)+1);
-                break;
-            }
-            index++;
-        }
-        if (index==(pricesEncountered.size()-1)){
+        if (pricesEncountered.contains(passedPrice)){
+            int index = pricesEncountered.indexOf(passedPrice);
+            timesEncountered.set(index, (timesEncountered.get(index)+1) );
+        } else{
             pricesEncountered.add(passedPrice);
             timesEncountered.add(1);
         }

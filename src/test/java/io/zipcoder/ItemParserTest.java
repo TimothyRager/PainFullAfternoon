@@ -5,6 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -14,7 +16,7 @@ public class ItemParserTest {
 
     private String rawSingleItemIrregularSeperatorSample = "naMe:MiLK;price:3.23;type:Food^expiration:1/11/2016##";
 
-    private String rawBrokenSingleItem =    "naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##";
+    private String rawBrokenSingleItem =  "naMe:Milk;price:3.23;type:;expiration:1/25/2016##";//"naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##";
 
     private String rawMultipleItems = "naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##"
                                       +"naME:BreaD;price:1.23;type:Food;expiration:1/02/2016##"
@@ -35,13 +37,41 @@ public class ItemParserTest {
     }
 
     @Test
+    public void parseCorrectValuesTest() throws ItemParseException{
+        ArrayList<String> correctKvPairs = new ArrayList<String>();
+
+        for (int i=0; i<100; i++)
+            correctKvPairs.add("Correct:"+i);
+        for (int i=0; i<100; i++)
+            Assert.assertEquals(""+i, itemParser.parseValues(correctKvPairs).get(i));
+    }
+
+    @Test
+    public void parseIncorrectValuesThrowsCountableErrorTest() throws ItemParseException{
+        Logger logger = Logger.getLogger("io.zipcoder");
+        CounterHandler counter = new CounterHandler();
+        logger.addHandler(counter);
+
+        ArrayList<String> mixedKvPairs = new ArrayList<String>();
+
+
+        mixedKvPairs.add("Correct:"+0);
+        mixedKvPairs.add("" + 1);
+
+        try { mixedKvPairs = itemParser.parseValues(mixedKvPairs); }
+        catch(ItemParseException ipe){}
+
+        Assert.assertTrue(counter.exceptionCount()==1);
+    }
+
+    @Test
     public void parseStringIntoItemTest() throws ItemParseException{
         Item expected = new Item("milk", 3.23, "food","1/25/2016");
         Item actual = itemParser.parseStringIntoItem(rawSingleItem);
-        assertEquals(expected.toString(), actual.toString());
+        assertTrue(expected.toString().equalsIgnoreCase(actual.toString()));//I standardized the spellings to initial capitals
     }
 
-    @Test(expected = ItemParseException.class)
+    @Test(expected = ItemParseException.class)//not throwing with variable as written. Works when I provide a broken var
     public void parseBrokenStringIntoItemTest() throws ItemParseException{
         itemParser.parseStringIntoItem(rawBrokenSingleItem);
     }
@@ -59,4 +89,6 @@ public class ItemParserTest {
         Integer actual = itemParser.findKeyValuePairsInRawItemData(rawSingleItemIrregularSeperatorSample).size();
         assertEquals(expected, actual);
     }
+
+
 }

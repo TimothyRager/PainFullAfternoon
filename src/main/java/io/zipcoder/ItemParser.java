@@ -29,12 +29,30 @@ public class ItemParser {
 
     public void displayFormattedItems(String rawData){
         ArrayList<Item> items = run(rawData);
+        StringBuilder formattedItemStringBuilder = new StringBuilder();
+        ArrayList<ProjectDisplayItem> displayItems = new ArrayList<ProjectDisplayItem>();
+        boolean priceIsNew;
 
-        for (Item i : items){
-            System.out.println(i.toString());
+        displayItems.add(new ProjectDisplayItem(items.get(0).getName(), items.get(0).getPrice()));
+        for (int i=1; i<items.size(); i++){
+            priceIsNew=true;
+            for (ProjectDisplayItem pjd : displayItems){
+                if (pjd.isSameItem(items.get(i).getName())){
+                    pjd.incrementCounters(items.get(i).getPrice());
+                    priceIsNew=false;
+                }
+            }
+            if (priceIsNew){
+                displayItems.add(new ProjectDisplayItem(items.get(i).getName(),items.get(i).getPrice()));
+            }
         }
 
-        System.out.println("Errors: "+counter.exceptionCount());
+        for (ProjectDisplayItem pjd : displayItems){
+            formattedItemStringBuilder.append(pjd.toString());
+        }
+
+        System.out.println(formattedItemStringBuilder.toString()+"Errors         \t \t seen: "
+                            +counter.exceptionCount()+" times");
 
     }
 
